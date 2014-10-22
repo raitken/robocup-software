@@ -15,6 +15,7 @@ class Dual_Shot(play.Play):
     class State(enum.Enum):
         setup = 1 #2 in position, 1 fetches
         passing = 2
+        scoring = 3
 
     def __init__(self):
         super().__init__(continuous=True)
@@ -28,6 +29,11 @@ class Dual_Shot(play.Play):
 
         self.add_transition(Dual_Shot.State.setup, 
             Dual_Shot.State.passing,
+            lambda: self.all_subbehaviors_completed(),
+            'all subbehaviors completed')
+
+        self.add_transition(Dual_Shot.State.passing,
+            Dual_Shot.State.scoring,
             lambda: self.all_subbehaviors_completed(),
             'all subbehaviors completed')
 
@@ -62,11 +68,11 @@ class Dual_Shot(play.Play):
         # kickToIdx = (kickFromIdx + 1) % len(self.shooting_points)
         # kickToPt = self.shooting_points[kickToIdx]
         line0 = robocup.Segment(
-                self.shooting_points[0]-0.1,
-                self.shooting_points[0]+0.1)
+                self.shooting_points[0]-robocup.Point(0.5,0)
+                self.shooting_points[0]+robocup.Point(0.5,0))
         line1 = robocup.Segment(
-                self.shooting_points[1]-0.1,
-                self.shooting_points[1]+0.1)
+                self.shooting_points[1]-robocup.Point(0.5,0)
+                self.shooting_points[1]+robocup.Point(0.5,0)
         if shot.eval_shot(main.ball().pos, line0) > shot.eval_shot(main.ball().pos, line1):
             self.add_subbehavior(tactics.coordinated_pass.CoordinatedPass(self.shooting_points[0]),
                 'pass')
